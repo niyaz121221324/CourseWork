@@ -70,4 +70,12 @@ public interface IRepository<T> where T : class
     /// <param name="predicate">Условие для фильтрации сущностей</param>
     /// <returns>Задача, возвращающая true, если сущность найдена, иначе false</returns>
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+
+    /// <summary>
+    /// Асинхронно извлекает имя ключевого свойства сущности.
+    /// </summary>
+    /// <returns>
+    /// Задача, представляющая асинхронную операцию. Результат задачи содержит имя ключевого свойства в виде строки.
+    /// </returns>
+    Task<string> GetKeyPropertyName();
 }
