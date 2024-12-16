@@ -65,7 +65,9 @@ public class Repository<T> : IRepository<T> where T : class
             throw new ArgumentException("ID must be greater than zero.", nameof(id));
         }
 
-         IQueryable<T> query = _dbSet;
+        var keyName = GetKeyPropertyName();
+
+        IQueryable<T> query = _dbSet;
 
         if (includeProperties != null && includeProperties.Length > 0)
         {
@@ -75,7 +77,18 @@ public class Repository<T> : IRepository<T> where T : class
             }
         }
 
-        return await query.FirstOrDefaultAsync(entity => EF.Property<int>(entity, "Id") == id);
+        return await query.FirstOrDefaultAsync(entity => EF.Property<int>(entity, keyName) == id);
+    }
+
+    private string GetKeyPropertyName() 
+    {
+        var keyProperty = _dbSet.EntityType.FindPrimaryKey()?.Properties.FirstOrDefault();
+        if (keyProperty == null)
+        {
+            throw new InvalidOperationException("The entity does not have a primary key defined.");
+        }
+
+        return keyProperty.Name;
     }
 
     public async Task<T?> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate)
