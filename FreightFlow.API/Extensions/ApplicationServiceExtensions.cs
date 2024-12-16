@@ -12,6 +12,21 @@ public static class ApplicationServiceExtensions
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
         });
 
+        ConfigurerCorsPolicy(services);
+
         return services;
+    }
+
+    private static void ConfigurerCorsPolicy(IServiceCollection services)
+    {
+        services.AddCors(opt =>
+        {
+            opt.AddPolicy("CorsPolicy", policy =>
+            {
+                policy.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins("http://localhost:3000");
+            });
+        });
     }
 }
