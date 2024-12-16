@@ -68,8 +68,8 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: admin          
-      POSTGRES_PASSWORD: admin  
+      POSTGRES_USER: {USER}    
+      POSTGRES_PASSWORD: {PASSWORD)  
       POSTGRES_DB: cargo_transportation_system 
     ports:
       - "5433:5432"                     
