@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35514.174
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FreightFlow.API", "FreightFlow.API\FreightFlow.API.csproj", "{984106FF-7862-429F-AF8A-E0A487D8AFC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FreightFlow.DAL", "FreightFlow.DAL\FreightFlow.DAL.csproj", "{425E44FD-4BA5-4AB8-B143-89499B37EBCB}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{8D044F2D-E9F4-49F8-8ECC-6D72189A3B36}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{984106FF-7862-429F-AF8A-E0A487D8AFC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{984106FF-7862-429F-AF8A-E0A487D8AFC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{984106FF-7862-429F-AF8A-E0A487D8AFC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{984106FF-7862-429F-AF8A-E0A487D8AFC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{425E44FD-4BA5-4AB8-B143-89499B37EBCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{425E44FD-4BA5-4AB8-B143-89499B37EBCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{425E44FD-4BA5-4AB8-B143-89499B37EBCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{425E44FD-4BA5-4AB8-B143-89499B37EBCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D044F2D-E9F4-49F8-8ECC-6D72189A3B36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D044F2D-E9F4-49F8-8ECC-6D72189A3B36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D044F2D-E9F4-49F8-8ECC-6D72189A3B36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D044F2D-E9F4-49F8-8ECC-6D72189A3B36}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

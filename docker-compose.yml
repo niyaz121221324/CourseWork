@@ -1,0 +1,7 @@
+services:
+  freightflow.api:
+    image: ${DOCKER_REGISTRY-}freightflowapi
+    build:
+      context: .
+      dockerfile: FreightFlow.API/Dockerfile
+    container_name: freightflow.api

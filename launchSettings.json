@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "3.8",
+      "serviceActions": {
+        "telegramsmsbridge.api": "StartDebugging"
+      }
+    }
+  }
+}
