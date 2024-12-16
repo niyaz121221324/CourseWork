@@ -4,7 +4,7 @@ services:
     container_name: freightflow.api
     build:
       context: .
-      dockerfile: FreightFlow.API/Dockerfile\
+      dockerfile: FreightFlow.API/Dockerfile
     networks:
       - app_network
 
