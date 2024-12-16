@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FreightFlow.DAL.Models;
+﻿namespace FreightFlow.DAL.Models;
 
 public partial class Route
 {
