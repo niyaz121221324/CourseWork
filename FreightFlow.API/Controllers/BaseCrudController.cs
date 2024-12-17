@@ -75,53 +75,53 @@ public abstract class BaseCrudController<T> : BaseApiController where T : class
         }
     }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, T entity)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, T entity)
+    {
+        if (id <= 0 || entity == null || !id.Equals(typeof(T).GetProperty("Id")?.GetValue(entity)))
         {
-            if (id <= 0 || entity == null || !id.Equals(typeof(T).GetProperty("Id")?.GetValue(entity)))
-            {
-                return BadRequest("Invalid data provided.");
-            }
-
-            var existingEntity = await _repository.GetByIdAsync(id);
-            if (existingEntity == null)
-            {
-                return NotFound(); 
-            }
-
-            try
-            {
-                await _repository.Update(entity);
-                return NoContent(); 
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            return BadRequest("Invalid data provided.");
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        var existingEntity = await _repository.GetByIdAsync(id);
+        if (existingEntity == null)
         {
-            if (id <= 0)
-            {
-                return BadRequest("Invalid ID.");
-            }
+            return NotFound(); 
+        }
 
-            var entity = await _repository.GetByIdAsync(id);
-            if (entity == null)
-            {
-                return NotFound(); 
-            }
-
-            try
-            {
-                await _repository.Delete(entity);
-                return NoContent(); 
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+        try
+        {
+            await _repository.Update(entity);
+            return NoContent(); 
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        if (id <= 0)
+        {
+            return BadRequest("Invalid ID.");
+        }
+
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity == null)
+        {
+            return NotFound(); 
+        }
+
+        try
+        {
+            await _repository.Delete(entity);
+            return NoContent(); 
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
+    }
+}
