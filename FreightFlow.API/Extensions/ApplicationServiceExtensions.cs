@@ -25,7 +25,7 @@ public static class ApplicationServiceExtensions
             {
                 policy.AllowAnyHeader()
                     .AllowAnyMethod()
-                    .WithOrigins("http://localhost:3000");
+                    .WithOrigins("http://localhost:3000", "http://blazor-client:80", "http://localhost:80");
             });
         });
     }

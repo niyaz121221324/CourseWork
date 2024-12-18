@@ -8,6 +8,17 @@ services:
     networks:
       - app_network
 
+  blazor-client:
+    image: ${DOCKER_REGISTRY-}freightflowclient
+    container_name: freightflowclient
+    build:
+      context: ./blazor-client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - app_network
+
   postgres:
     image: postgres:15  
     container_name: postgres_db
