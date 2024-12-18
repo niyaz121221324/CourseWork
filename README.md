@@ -63,13 +63,24 @@ services:
     networks:
       - app_network
 
+  blazor-client:
+    image: ${DOCKER_REGISTRY-}freightflowclient
+    container_name: freightflowclient
+    build:
+      context: ./blazor-client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - app_network
+
   postgres:
     image: postgres:15  
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: {USER}    
-      POSTGRES_PASSWORD: {PASSWORD)  
+      POSTGRES_USER: admin          
+      POSTGRES_PASSWORD: admin  
       POSTGRES_DB: cargo_transportation_system 
     ports:
       - "5433:5432"                     
