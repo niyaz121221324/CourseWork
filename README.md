@@ -54,26 +54,6 @@
 
 ```yml
 services:
-  freightflow.api:
-    image: ${DOCKER_REGISTRY-}freightflowapi
-    container_name: freightflow.api
-    build:
-      context: .
-      dockerfile: FreightFlow.API/Dockerfile
-    networks:
-      - app_network
-
-  blazor-client:
-    image: ${DOCKER_REGISTRY-}freightflowclient
-    container_name: freightflowclient
-    build:
-      context: ./blazor-client
-      dockerfile: Dockerfile
-    ports:
-      - "3000:80"
-    networks:
-      - app_network
-
   postgres:
     image: postgres:15  
     container_name: postgres_db
@@ -88,7 +68,49 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app_network
-        
+ 
+  freightflow.api:
+    image: ${DOCKER_REGISTRY-}freightflowapi
+    container_name: freightflow.api
+    build:
+      context: .
+      dockerfile: FreightFlow.API/Dockerfile
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+  blazor-client:
+    image: ${DOCKER_REGISTRY-}freightflowclient
+    container_name: freightflowclient
+    build:
+      context: ./blazor-client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - freightflow.api
+    networks:
+      - app_network
+    
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok
+    restart: unless-stopped
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml:ro
+    depends_on:
+      - blazor-client
+    ports:
+      - 4040:4040
+    networks:
+      - app_network
+
 volumes:
   postgres_data:
     driver: local  
