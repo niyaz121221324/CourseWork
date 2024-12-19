@@ -1,9 +1,6 @@
 @page "/users"
 @inject NavigationManager Navigation
 
-<h1>users</h1>
-<a href="/">Go to Home Page</a>
-
 <div class="users-page">
     <header class="text-center">
         <h1 class="display-4">👥 User Management</h1>
@@ -50,6 +47,9 @@
                         }
                     </tbody>
                 </table>
+                <div class="text-center mt-3">
+                    <a href="/" class="btn btn-secondary">Go to Home Page</a>
+                </div>
             </div>
         </div>
     </div>
@@ -79,7 +79,6 @@
 
     private void EditUser(int id)
     {
-        // Navigate to a user editing page with ID in the URL
         Navigation.NavigateTo($"/edit-user/{id}");
     }
 

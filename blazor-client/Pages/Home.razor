@@ -1,4 +1,5 @@
 ﻿@page "/"
+@implements IDisposable
 @inject NavigationManager Navigation
 
 <div class="homepage">
@@ -13,30 +14,14 @@
             <div class="col-md-6 offset-md-3">
                 <h3 class="text-center mb-4">Explore the System</h3>
                 <div class="list-group">
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToCargos">
-                        <i class="bi bi-box"></i> Manage Cargos
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToClients">
-                        <i class="bi bi-person"></i> Manage Clients
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToDrivers">
-                        <i class="bi bi-people"></i> Manage Drivers
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToOrders">
-                        <i class="bi bi-receipt"></i> Manage Orders
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToRoutes">
-                        <i class="bi bi-map"></i> Manage Routes
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToTrips">
-                        <i class="bi bi-truck"></i> Manage Trips
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToVehicles">
-                        <i class="bi bi-car-front"></i> Manage Vehicles
-                    </a>
-                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToUsers">
-                        <i class="bi bi-car-front"></i> Manage Users
-                    </a>
+                    @foreach (var item in NavigationItems)
+                    {
+                        <a href="#" 
+                           class="list-group-item list-group-item-action"
+                           @onclick="() => NavigateTo(item.Path)">
+                            <i class="@item.Icon"></i> @item.Title
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -76,12 +61,49 @@
 </style>
 
 @code {
-    private void NavigateToCargos() => Navigation.NavigateTo("/cargos");
-    private void NavigateToClients() => Navigation.NavigateTo("/clients");
-    private void NavigateToDrivers() => Navigation.NavigateTo("/drivers");
-    private void NavigateToOrders() => Navigation.NavigateTo("/orders");
-    private void NavigateToRoutes() => Navigation.NavigateTo("/routes");
-    private void NavigateToTrips() => Navigation.NavigateTo("/trips");
-    private void NavigateToVehicles() => Navigation.NavigateTo("/vehicles");
-    private void NavigateToUsers() => Navigation.NavigateTo("/users");
+    private List<NavigationItem> NavigationItems { get; set; } = new List<NavigationItem>
+    {
+        new NavigationItem("Manage Cargos", "bi bi-box", "/cargos"),
+        new NavigationItem("Manage Clients", "bi bi-person", "/clients"),
+        new NavigationItem("Manage Drivers", "bi bi-people", "/drivers"),
+        new NavigationItem("Manage Orders", "bi bi-receipt", "/orders"),
+        new NavigationItem("Manage Routes", "bi bi-map", "/routes"),
+        new NavigationItem("Manage Trips", "bi bi-truck", "/trips"),
+        new NavigationItem("Manage Vehicles", "bi bi-car-front", "/vehicles"),
+        new NavigationItem("Manage Users", "bi bi-people", "/users")
+    };
+
+    private void NavigateTo(string path)
+    {
+        Navigation.NavigateTo(path);
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        Console.WriteLine($"Navigated to: {e.Location}");
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+    }
+
+    private class NavigationItem
+    {
+        public string Title { get; }
+        public string Icon { get; }
+        public string Path { get; }
+
+        public NavigationItem(string title, string icon, string path)
+        {
+            Title = title;
+            Icon = icon;
+            Path = path;
+        }
+    }
 }
