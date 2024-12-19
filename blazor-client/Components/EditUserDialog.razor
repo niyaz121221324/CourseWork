@@ -1,0 +1,77 @@
+<div class="modal @(IsOpen ? "show" : "hide")" tabindex="-1" style="display:@(IsOpen ? "block" : "none");">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@((User.Userid == 0) ? "Add New User" : "Edit User")</h5>
+                <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+            </div>
+            <div class="modal-body">
+                <EditField Label="First Name" Id="firstname" BindValue="@User.Firstname" Type="text" />
+                <EditField Label="Last Name" Id="lastname" BindValue="@User.Lastname" Type="text" />
+                <EditField Label="Role" Id="role" BindValue="@User.Role" Type="text" />
+                <EditField Label="Email" Id="email" BindValue="@User.Email" Type="email" />
+                <EditField Label="Phone" Id="phone" BindValue="@User.Phone" Type="text" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseDialog">Cancel</button>
+                <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public User User { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<User> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task Save()
+    {
+        if (ValidateUser())
+        {
+            await OnSave.InvokeAsync(User);
+        }
+    }
+
+    private async Task CloseDialog()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private bool ValidateUser()
+    {
+        if (string.IsNullOrWhiteSpace(User.Firstname))
+        {
+            Console.WriteLine("First Name is required.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(User.Lastname))
+        {
+            Console.WriteLine("Last Name is required.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(User.Email))
+        {
+            Console.WriteLine("Email is required.");
+            return false;
+        }
+
+        if (!User.Email.Contains("@"))
+        {
+            Console.WriteLine("Invalid Email format.");
+            return false;
+        }
+
+        return true;
+    }
+}

@@ -1,7 +1,87 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<div class="homepage">
+    <header class="text-center">
+        <h1 class="display-4">🚚 FreightFlow Cargo Transportation System</h1>
+        <p class="lead">Streamlining cargo management for your business.</p>
+        <hr class="my-4">
+    </header>
 
-<h1>Hello, world!</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h3 class="text-center mb-4">Explore the System</h3>
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToCargos">
+                        <i class="bi bi-box"></i> Manage Cargos
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToClients">
+                        <i class="bi bi-person"></i> Manage Clients
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToDrivers">
+                        <i class="bi bi-people"></i> Manage Drivers
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToOrders">
+                        <i class="bi bi-receipt"></i> Manage Orders
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToRoutes">
+                        <i class="bi bi-map"></i> Manage Routes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToTrips">
+                        <i class="bi bi-truck"></i> Manage Trips
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToVehicles">
+                        <i class="bi bi-car-front"></i> Manage Vehicles
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" @onclick="NavigateToUsers">
+                        <i class="bi bi-car-front"></i> Manage Users
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-Welcome to your new app.
+<style>
+    .homepage {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+    header {
+        margin-bottom: 2rem;
+        padding: 2rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .list-group a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+    .list-group-item {
+        border: 1px solid #ddd;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+    .list-group-item:hover {
+        background-color: #e9ecef;
+        transform: translateY(-2px);
+    }
+    .bi {
+        font-size: 1.5rem;
+        color: #0d6efd;
+    }
+</style>
+
+@code {
+    private void NavigateToCargos() => Navigation.NavigateTo("/cargos");
+    private void NavigateToClients() => Navigation.NavigateTo("/clients");
+    private void NavigateToDrivers() => Navigation.NavigateTo("/drivers");
+    private void NavigateToOrders() => Navigation.NavigateTo("/orders");
+    private void NavigateToRoutes() => Navigation.NavigateTo("/routes");
+    private void NavigateToTrips() => Navigation.NavigateTo("/trips");
+    private void NavigateToVehicles() => Navigation.NavigateTo("/vehicles");
+    private void NavigateToUsers() => Navigation.NavigateTo("/users");
+}

@@ -13,12 +13,12 @@ public class Repository<T> : IRepository<T> where T : class
         _baseUrl = baseUrl;
     }
 
-    public async Task<List<T>> GetAllAsync()
+    public async Task<List<T>>? GetAllAsync()
     {
         return await _httpClient.GetFromJsonAsync<List<T>>(_baseUrl);
     }
 
-    public async Task<T> GetByIdAsync(int id)
+    public async Task<T>? GetByIdAsync(int id)
     {
         return await _httpClient.GetFromJsonAsync<T>($"{_baseUrl}/{id}");
     }
