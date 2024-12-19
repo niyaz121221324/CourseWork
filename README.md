@@ -34,11 +34,16 @@
 
     - **FreightFlow API** (ASP.NET Core)
     - **PostgreSQL** (для хранения данных)
+    - **FreightFlow Client** (Blazor WebAssembly)
+    - **Ngrok** (для доступа к сервису из сети интернет)
 
-3. Приложение будет доступно по адресу:
+3. Приложение будет доступно по адресам:
 
     ```text
-    http://localhost:8080
+    http://localhost:3000
+    ```
+    ```text
+    https://glider-dear-hog.ngrok-free.app
     ```
 
 ## Структура проекта
@@ -46,12 +51,9 @@
 - `FreightFlow.Api/` - Основной код API, написанный на ASP.NET Core.
 - `Dockerfile` - Файл для сборки контейнера с приложением.
 - `docker-compose.yml` - Конфигурация для Docker Compose, описывающая сервисы и их настройки.
-- `FreightFlow.Db/` - Схемы и миграции для работы с базой данных PostgreSQL.
+- `blazor-client` - Клиентская часть приложения
 
-## Конфигурация базы данных
-
-В файле `docker-compose.yml` настроено подключение к базе данных PostgreSQL. Вам нужно будет указать параметры подключения в переменных окружения:
-
+## Конфигурация базы запуска проекта
 ```yml
 services:
   postgres:
