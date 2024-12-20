@@ -25,16 +25,41 @@ public class Repository<T> : IRepository<T> where T : class
         return $"{httpClient.BaseAddress?.ToString()}/{typeof(T).Name}"; 
     }
 
+    private async Task<T?> HandleResponseAsync<T>(HttpResponseMessage response)
+    {
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        else
+        {
+            _logger?.LogWarning("Request failed. Status Code: {StatusCode}", response.StatusCode);
+            response.EnsureSuccessStatusCode();
+            return default;  // This should never be hit due to EnsureSuccessStatusCode()
+        }
+    }
+
+    private void LogRequestInfo(string methodName, string url)
+    {
+        _logger?.LogInformation("{Method} request to {Url}", methodName, url);
+    }
+
+    private void LogError(string methodName, string url, Exception ex)
+    {
+        _logger?.LogError(ex, "Error during {Method} request to {Url}", methodName, url);
+    }
+
     public async Task<List<T>?> GetAllAsync()
     {
         try
         {
-            _logger?.LogInformation("Fetching all entities from {Url}", _baseUrl);
-            return await _httpClient.GetFromJsonAsync<List<T>>(_baseUrl);
+            LogRequestInfo("GET", _baseUrl);
+            var response = await _httpClient.GetAsync(_baseUrl);
+            return await HandleResponseAsync<List<T>>(response);
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error fetching all entities from {Url}", _baseUrl);
+            LogError("GET", _baseUrl, ex);
             throw;
         }
     }
@@ -44,12 +69,13 @@ public class Repository<T> : IRepository<T> where T : class
         try
         {
             string url = $"{_baseUrl}/{id}";
-            _logger?.LogInformation("Fetching entity by ID from {Url}", url);
-            return await _httpClient.GetFromJsonAsync<T>(url);
+            LogRequestInfo("GET by ID", url);
+            var response = await _httpClient.GetAsync(url);
+            return await HandleResponseAsync<T>(response);
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error fetching entity by ID {Id} from {Url}", id, _baseUrl);
+            LogError("GET by ID", $"{_baseUrl}/{id}", ex);
             throw;
         }
     }
@@ -60,21 +86,14 @@ public class Repository<T> : IRepository<T> where T : class
 
         try
         {
-            _logger?.LogInformation("Creating a new entity at {Url}", _baseUrl);
+            LogRequestInfo("POST", _baseUrl);
             var response = await _httpClient.PostAsJsonAsync(_baseUrl, entity);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger?.LogWarning("Failed to create entity. Status Code: {StatusCode}", response.StatusCode);
-                response.EnsureSuccessStatusCode();
-            }
-
-            return await response.Content.ReadFromJsonAsync<T>()
+            return await HandleResponseAsync<T>(response)
                 ?? throw new InvalidOperationException("Failed to deserialize the created entity.");
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error creating entity at {Url}", _baseUrl);
+            LogError("POST", _baseUrl, ex);
             throw;
         }
     }
@@ -86,18 +105,13 @@ public class Repository<T> : IRepository<T> where T : class
         try
         {
             string url = $"{_baseUrl}/{id}";
-            _logger?.LogInformation("Updating entity with ID {Id} at {Url}", id, url);
+            LogRequestInfo("PUT", url);
             var response = await _httpClient.PutAsJsonAsync(url, entity);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger?.LogWarning("Failed to update entity with ID {Id}. Status Code: {StatusCode}", id, response.StatusCode);
-                response.EnsureSuccessStatusCode();
-            }
+            await HandleResponseAsync<T>(response);  
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error updating entity with ID {Id} at {Url}", id, _baseUrl);
+            LogError("PUT", $"{_baseUrl}/{id}", ex);
             throw;
         }
     }
@@ -107,18 +121,13 @@ public class Repository<T> : IRepository<T> where T : class
         try
         {
             string url = $"{_baseUrl}/{id}";
-            _logger?.LogInformation("Deleting entity with ID {Id} from {Url}", id, url);
+            LogRequestInfo("DELETE", url);
             var response = await _httpClient.DeleteAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger?.LogWarning("Failed to delete entity with ID {Id}. Status Code: {StatusCode}", id, response.StatusCode);
-                response.EnsureSuccessStatusCode();
-            }
+            await HandleResponseAsync<T>(response); 
         }
         catch (Exception ex)
         {
-            _logger?.LogError(ex, "Error deleting entity with ID {Id} from {Url}", id, _baseUrl);
+            LogError("DELETE", $"{_baseUrl}/{id}", ex);
             throw;
         }
     }
