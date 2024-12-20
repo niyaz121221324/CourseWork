@@ -7,7 +7,7 @@ using blazor_client.Models;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 // Configure HttpClient for dependency injection with the base address
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://freightflow.api:8080/api/") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:8080/api") });
 
 // Register the repository as a scoped service for dependency injection
 builder.Services.AddScoped<IRepository<User>, Repository<User>>();

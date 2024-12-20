@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using Microsoft.Extensions.Logging;
 
 namespace blazor_client.Repositories;
 
@@ -12,8 +11,18 @@ public class Repository<T> : IRepository<T> where T : class
     public Repository(HttpClient httpClient, ILogger<Repository<T>>? logger = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _baseUrl = _httpClient.BaseAddress?.ToString() ?? throw new InvalidOperationException("Base address must be set for HttpClient.");
+        _baseUrl = GetBaseUrlString(httpClient);
         _logger = logger;
+    }
+
+    private string GetBaseUrlString(HttpClient httpClient)
+    {
+        if (_httpClient.BaseAddress == null)
+        {
+            throw new InvalidOperationException("Base address must be set for HttpClient.");
+        }
+
+        return $"{httpClient.BaseAddress?.ToString()}/{typeof(T).Name}"; 
     }
 
     public async Task<List<T>?> GetAllAsync()

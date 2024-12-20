@@ -13,7 +13,7 @@
             <div class="col-md-12">
                 <h3 class="text-center mb-4">User List</h3>
 
-                @if (Users.Any())
+                @if (Users != null && Users.Any())
                 {
                     <table class="table table-bordered">
                         <thead class="thead-light">
@@ -123,29 +123,26 @@
     </div>
 </div>
 
-<style>
-    .users-page {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #333;
-    }
-    header {
-        margin-bottom: 2rem;
-        padding: 2rem 1rem;
-        background-color: #f8f9fa;
-        border-radius: 0.5rem;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    }
-</style>
-
 @code {
-    private List<User> Users = new()
-    {
-        new User { Userid = 1, Firstname = "John", Lastname = "Doe", Role = "Admin", Login = "jdoe", Email = "john.doe@example.com", Phone = "123-456-7890" },
-        new User { Userid = 2, Firstname = "Jane", Lastname = "Smith", Role = "User", Login = "jsmith", Email = "jane.smith@example.com", Phone = "098-765-4321" },
-        new User { Userid = 3, Firstname = "Alice", Lastname = "Johnson", Role = "Moderator", Login = "ajohnson", Email = "alice.johnson@example.com" }
-    };
-
+    private List<User>? Users { get; set; }
     private User? EditingUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        try
+        {
+            Users = await UserRepository.GetAllAsync() ?? new List<User>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading users: {ex.Message}");
+        }
+    }
 
     private void StartEditing(User user)
     {
@@ -161,19 +158,21 @@
         };
     }
 
-    private void SaveUser()
+    private async Task SaveUser()
     {
-        var user = Users.FirstOrDefault(u => u.Userid == EditingUser?.Userid);
-        if (user != null && EditingUser != null)
+        if (EditingUser == null)
+            return;
+
+        try
         {
-            user.Firstname = EditingUser.Firstname;
-            user.Lastname = EditingUser.Lastname;
-            user.Role = EditingUser.Role;
-            user.Login = EditingUser.Login;
-            user.Email = EditingUser.Email;
-            user.Phone = EditingUser.Phone;
+            await UserRepository.UpdateAsync(EditingUser.Userid, EditingUser);
+            await LoadUsersAsync();
+            EditingUser = null;
         }
-        EditingUser = null;
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error saving user: {ex.Message}");
+        }
     }
 
     private void CancelEdit()
@@ -181,20 +180,23 @@
         EditingUser = null;
     }
 
-    private void DeleteUser(int userid)
+    private async Task DeleteUser(int userid)
     {
-        var userToRemove = Users.FirstOrDefault(u => u.Userid == userid);
-        if (userToRemove != null)
+        try
         {
-            Users.Remove(userToRemove);
+            await UserRepository.DeleteAsync(userid);
+            await LoadUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting user: {ex.Message}");
         }
     }
 
-    private void AddNewUser()
+    private async Task AddNewUser()
     {
         var newUser = new User
         {
-            Userid = Users.Count > 0 ? Users.Max(u => u.Userid) + 1 : 1,
             Firstname = "New",
             Lastname = "User",
             Role = "User",
@@ -202,6 +204,15 @@
             Email = "new.user@example.com",
             Phone = null
         };
-        Users.Add(newUser);
+
+        try
+        {
+            await UserRepository.CreateAsync(newUser);
+            await LoadUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error adding user: {ex.Message}");
+        }
     }
 }
