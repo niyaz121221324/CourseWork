@@ -1,5 +1,4 @@
 ﻿@page "/"
-@implements IDisposable
 @inject NavigationManager Navigation
 
 <div class="homepage">
@@ -16,9 +15,8 @@
                 <div class="list-group">
                     @foreach (var item in NavigationItems)
                     {
-                        <a href="#" 
-                           class="list-group-item list-group-item-action"
-                           @onclick="() => NavigateTo(item.Path)">
+                        <a href="@item.Path" 
+                           class="list-group-item list-group-item-action">
                             <i class="@item.Icon"></i> @item.Title
                         </a>
                     }
@@ -72,26 +70,6 @@
         new NavigationItem("Manage Vehicles", "bi bi-car-front", "/vehicles"),
         new NavigationItem("Manage Users", "bi bi-people", "/users")
     };
-
-    private void NavigateTo(string path)
-    {
-        Navigation.NavigateTo(path);
-    }
-
-    protected override void OnInitialized()
-    {
-        Navigation.LocationChanged += HandleLocationChanged;
-    }
-
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        Console.WriteLine($"Navigated to: {e.Location}");
-    }
-
-    public void Dispose()
-    {
-        Navigation.LocationChanged -= HandleLocationChanged;
-    }
 
     private class NavigationItem
     {
