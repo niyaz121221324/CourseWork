@@ -35,7 +35,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             _logger?.LogWarning("Request failed. Status Code: {StatusCode}", response.StatusCode);
             response.EnsureSuccessStatusCode();
-            return default;  // This should never be hit due to EnsureSuccessStatusCode()
+            return default;  
         }
     }
 
