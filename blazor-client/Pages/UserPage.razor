@@ -1,0 +1,207 @@
+@page "/users"
+@inject IRepository<User> UserRepository
+
+<div class="users-page">
+    <header class="text-center">
+        <h1 class="display-4">👥 User Management</h1>
+        <p class="lead">Manage system users effectively.</p>
+        <hr class="my-4">
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-center mb-4">User List</h3>
+
+                @if (Users.Any())
+                {
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>User ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Login</th>
+                                <th>Role</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Users)
+                            {
+                                <tr>
+                                    <td>@user.Userid</td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <input class="form-control" @bind="EditingUser.Firstname" />
+                                        }
+                                        else
+                                        {
+                                            @user.Firstname
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <input class="form-control" @bind="EditingUser.Lastname" />
+                                        }
+                                        else
+                                        {
+                                            @user.Lastname
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <input class="form-control" @bind="EditingUser.Login" />
+                                        }
+                                        else
+                                        {
+                                            @user.Login
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <input class="form-control" @bind="EditingUser.Role" />
+                                        }
+                                        else
+                                        {
+                                            @user.Role
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <input class="form-control" @bind="EditingUser.Phone" />
+                                        }
+                                        else
+                                        {
+                                            @user.Phone
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <input class="form-control" @bind="EditingUser.Email" />
+                                        }
+                                        else
+                                        {
+                                            @user.Email
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Userid == EditingUser?.Userid)
+                                        {
+                                            <button class="btn btn-success btn-sm" @onclick="SaveUser">Save</button>
+                                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary btn-sm" @onclick="() => StartEditing(user)">Edit</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteUser(user.Userid)">Delete</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-center">No users available.</p>
+                }
+
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary" @onclick="AddNewUser">Add New User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .users-page {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+    }
+    header {
+        margin-bottom: 2rem;
+        padding: 2rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+@code {
+    private List<User> Users = new()
+    {
+        new User { Userid = 1, Firstname = "John", Lastname = "Doe", Role = "Admin", Login = "jdoe", Email = "john.doe@example.com", Phone = "123-456-7890" },
+        new User { Userid = 2, Firstname = "Jane", Lastname = "Smith", Role = "User", Login = "jsmith", Email = "jane.smith@example.com", Phone = "098-765-4321" },
+        new User { Userid = 3, Firstname = "Alice", Lastname = "Johnson", Role = "Moderator", Login = "ajohnson", Email = "alice.johnson@example.com" }
+    };
+
+    private User? EditingUser { get; set; }
+
+    private void StartEditing(User user)
+    {
+        EditingUser = new User
+        {
+            Userid = user.Userid,
+            Firstname = user.Firstname,
+            Lastname = user.Lastname,
+            Role = user.Role,
+            Login = user.Login,
+            Email = user.Email,
+            Phone = user.Phone
+        };
+    }
+
+    private void SaveUser()
+    {
+        var user = Users.FirstOrDefault(u => u.Userid == EditingUser?.Userid);
+        if (user != null && EditingUser != null)
+        {
+            user.Firstname = EditingUser.Firstname;
+            user.Lastname = EditingUser.Lastname;
+            user.Role = EditingUser.Role;
+            user.Login = EditingUser.Login;
+            user.Email = EditingUser.Email;
+            user.Phone = EditingUser.Phone;
+        }
+        EditingUser = null;
+    }
+
+    private void CancelEdit()
+    {
+        EditingUser = null;
+    }
+
+    private void DeleteUser(int userid)
+    {
+        var userToRemove = Users.FirstOrDefault(u => u.Userid == userid);
+        if (userToRemove != null)
+        {
+            Users.Remove(userToRemove);
+        }
+    }
+
+    private void AddNewUser()
+    {
+        var newUser = new User
+        {
+            Userid = Users.Count > 0 ? Users.Max(u => u.Userid) + 1 : 1,
+            Firstname = "New",
+            Lastname = "User",
+            Role = "User",
+            Login = "newuser",
+            Email = "new.user@example.com",
+            Phone = null
+        };
+        Users.Add(newUser);
+    }
+}
