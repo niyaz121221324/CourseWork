@@ -19,13 +19,21 @@ public static class ApplicationServiceExtensions
 
     private static void ConfigurerCorsPolicy(IServiceCollection services)
     {
+        var allowedOrigins = new[]
+        {
+            "http://localhost:3000",
+            "http://blazor-client:80",
+            "http://localhost:80",
+            "https://glider-dear-hog.ngrok-free.app"
+        };
+        
         services.AddCors(opt =>
         {
             opt.AddPolicy("CorsPolicy", policy =>
             {
                 policy.AllowAnyHeader()
                     .AllowAnyMethod()
-                    .WithOrigins("http://localhost:3000", "http://blazor-client:80", "http://localhost:80");
+                    .WithOrigins(allowedOrigins);
             });
         });
     }
