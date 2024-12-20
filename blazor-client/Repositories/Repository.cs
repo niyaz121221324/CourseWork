@@ -7,7 +7,7 @@ public class Repository<T> : IRepository<T> where T : class
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
 
-    public Repository(HttpClient httpClient, string baseUrl)
+    public Repository(HttpClient httpClient)
     {
         _httpClient = httpClient;
         _baseUrl = baseUrl;
