@@ -120,8 +120,18 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task Update(T entity)
     {
-        _dbSet.Attach(entity);
+        if (_dbContext.Entry(entity).State == EntityState.Detached)
+        {
+            _dbSet.Attach(entity);
+        }
+
         _dbContext.Entry(entity).State = EntityState.Modified;
+
+        var modifiedProperties = _dbContext.Entry(entity).Properties
+            .Where(p => p.IsModified)
+            .Select(p => p.Metadata.Name)
+            .ToList();
+
         await _dbContext.SaveChangesAsync();
     }
 }
