@@ -23,13 +23,13 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task CreateAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
-        await _dbContext.SaveChangesAsync();
+        await SaveChangesAsync("An error occurred while creating the new entity.");
     }
 
     public async Task Delete(T entity)
     {
         _dbSet.Remove(entity);
-        await _dbContext.SaveChangesAsync();
+        await SaveChangesAsync("An error occurred while deleting the entity.");
     }
 
     public async Task DeleteAsync(int id)
