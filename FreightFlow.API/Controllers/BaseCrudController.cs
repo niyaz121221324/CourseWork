@@ -111,20 +111,15 @@ public abstract class BaseCrudController<T> : BaseApiController where T : class
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, T entity)
     {
-        if (id <= 0 || entity == null || !id.Equals(typeof(T).GetProperty("Id")?.GetValue(entity)))
+        var validationResult = await ValidateEntityAsync(id, entity);
+        if (validationResult is not OkResult)
         {
-            return BadRequest("Invalid data provided.");
-        }
-
-        var existingEntity = await _repository.GetByIdAsync(id);
-        if (existingEntity == null)
-        {
-            return NotFound(); 
+            return validationResult;
         }
 
         try
         {
-            await _repository.Update(entity);
+            await _repository.Update(id, entity);
             return NoContent(); 
         }
         catch (Exception ex)
@@ -132,6 +127,31 @@ public abstract class BaseCrudController<T> : BaseApiController where T : class
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
+
+    private async Task<IActionResult> ValidateEntityAsync(int id, T entity)
+    {
+        if (entity == null)
+        {
+            return BadRequest("Entity cannot be null.");
+        }
+
+        var keyPropertyName = await _repository.GetKeyPropertyName();
+    
+        if (string.IsNullOrEmpty(keyPropertyName))
+        {
+            return BadRequest("Entity does not have a valid key property.");
+        }
+
+        var entityId = typeof(T).GetProperty(keyPropertyName)?.GetValue(entity);
+
+        if (entityId == null || !id.Equals(entityId))
+        {
+            return BadRequest($"Entity Id ({entityId}) does not match the provided id ({id}).");
+        }
+
+        return Ok(); 
+    }
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

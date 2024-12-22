@@ -116,20 +116,55 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.SingleOrDefaultAsync(predicate);
     }
 
-    public async Task Update(T entity)
+    public async Task Update(int id, T entity)
     {
-        if (_dbContext.Entry(entity).State == EntityState.Detached)
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity), "Entity cannot be null.");
+        }
+
+        var existingEntity = await GetByIdAsync(id);
+        if (existingEntity == null)
+        {
+            throw new InvalidOperationException($"Entity with id {id} not found.");
+        }
+        
+        var keyPropertyName = await GetKeyPropertyName();
+        var trackedEntity = _dbSet.Local.FirstOrDefault(e => e.GetType().GetProperty(keyPropertyName)?.GetValue(e)?.Equals(id) == true);
+
+        if (trackedEntity != null)
+        {
+            _dbContext.Entry(trackedEntity).CurrentValues.SetValues(entity);
+        }
+        else
+        {
+            AttachEntityAndMarkModified(entity);
+        }
+
+        await SaveChangesAsync("An error occurred while updating the entity.");
+    }
+
+    private void AttachEntityAndMarkModified(T entity)
+    {
+        var entry = _dbContext.Entry(entity);
+
+        if (entry.State == EntityState.Detached)
         {
             _dbSet.Attach(entity);
         }
 
-        _dbContext.Entry(entity).State = EntityState.Modified;
+        entry.State = EntityState.Modified;
+    }
 
-        var modifiedProperties = _dbContext.Entry(entity).Properties
-            .Where(p => p.IsModified)
-            .Select(p => p.Metadata.Name)
-            .ToList();
-
-        await _dbContext.SaveChangesAsync();
+    private async Task SaveChangesAsync(string errorMessage)
+    {
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("An error occurred while updating the entity.", ex);
+        }
     }
 }

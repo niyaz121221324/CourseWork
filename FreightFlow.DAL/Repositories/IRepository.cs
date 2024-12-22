@@ -47,8 +47,9 @@ public interface IRepository<T> where T : class
     /// Асинхронно обновляет сущность <typeparamref name="T"/> в базе данных.
     /// </summary>
     /// <param name="entity">Обновляемая сущность</param>
+    /// <param name="id">Id Обновляемой сущность</param>
     /// <returns>Задача, представляющая обновление сущности <typeparamref name="T"/></returns>
-    Task Update(T entity);
+    Task Update(int id, T entity);
 
     /// <summary>
     /// Асинхронно возвращает первую сущность, удовлетворяющую указанному условию, или null, если сущность не найдена.
