@@ -1,3 +1,4 @@
+using System.Reflection;
 using FreightFlow.DAL.Contexts;
 using FreightFlow.DAL.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -52,27 +53,67 @@ public abstract class BaseCrudController<T> : BaseApiController where T : class
 
         try
         {
-            var keyPropertyName = await _repository.GetKeyPropertyName();
-            var idProperty = typeof(T).GetProperty(keyPropertyName);
-            if (idProperty == null)
-            {
-                return BadRequest("Entity does not have an 'Id' property.");
-            }
+            var keyPropertyName = await GetKeyPropertyNameAsync();
+            var idProperty = ValidateKeyProperty(keyPropertyName);
 
-            var id = (int?)idProperty.GetValue(entity);
+            ValidateEntityIdForCreation(entity, idProperty);
 
             await _repository.CreateAsync(entity);
 
+            var newIdValue = idProperty.GetValue(entity);
+            if (newIdValue == null)
+            {
+                return StatusCode(500, "Failed to retrieve the ID of the newly created entity.");
+            }
+
             return CreatedAtAction(
                 nameof(GetById),
-                new { id },
+                new { id = newIdValue },
                 entity
             );
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
+            return HandleException(ex);
         }
+    }
+
+    private async Task<string> GetKeyPropertyNameAsync()
+    {
+        var keyPropertyName = await _repository.GetKeyPropertyName();
+        if (string.IsNullOrEmpty(keyPropertyName))
+        {
+            throw new InvalidOperationException("Key property name cannot be determined.");
+        }
+        return keyPropertyName;
+    }
+
+    private PropertyInfo ValidateKeyProperty(string keyPropertyName)
+    {
+        var idProperty = typeof(T).GetProperty(keyPropertyName);
+        if (idProperty == null)
+        {
+            throw new InvalidOperationException($"Entity does not have a key property '{keyPropertyName}'.");
+        }
+        return idProperty;
+    }
+
+    private void ValidateEntityIdForCreation(T entity, PropertyInfo idProperty)
+    {
+        var idValue = idProperty.GetValue(entity);
+        if (idValue != null && Convert.ToInt32(idValue) > 0)
+        {
+            throw new InvalidOperationException("Entity ID should not be set for creation.");
+        }
+    }
+
+    private ActionResult<T> HandleException(Exception ex)
+    {
+        return ex switch
+        {
+            InvalidOperationException => BadRequest(ex.Message),
+            _ => StatusCode(500, $"Internal server error: {ex.Message}")
+        };
     }
 
     [HttpPut("{id}")]
