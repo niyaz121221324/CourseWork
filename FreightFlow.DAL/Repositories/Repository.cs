@@ -164,7 +164,7 @@ public class Repository<T> : IRepository<T> where T : class
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("An error occurred while updating the entity.", ex);
+            throw new InvalidOperationException(errorMessage, ex);
         }
     }
 }
