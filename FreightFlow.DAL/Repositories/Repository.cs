@@ -1,4 +1,6 @@
+using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 using FreightFlow.DAL.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,6 +46,26 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
     {
         return await _dbSet.FirstOrDefaultAsync(predicate);
+    }
+
+    public async Task<T?> LastOrDefaultAsync(Expression<Func<T, bool>>? predicate = null)
+    {
+        var keyPropertyName = await GetKeyPropertyName();
+        if (string.IsNullOrEmpty(keyPropertyName))
+        {
+            throw new InvalidOperationException("Key property name cannot be null or empty.");
+        }
+
+        var query = _dbSet.AsQueryable();
+
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+
+        query = query.OrderByDescending(e => EF.Property<object>(e, keyPropertyName));
+
+        return await query.FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<T>?> GetAllAsync(params string[] includeProperties)

@@ -58,6 +58,13 @@ public interface IRepository<T> where T : class
     Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
 
     /// <summary>
+    /// Асинхронно возвращает последнюю сущность, удовлетворяющую указанному условию, или null, если сущность не найдена.
+    /// </summary>
+    /// <param name="predicate">Условие для фильтрации сущностей</param>
+    /// <returns>Задача, возвращающая последнюю сущность <typeparamref name="T"/> или null</returns>
+    Task<T?> LastOrDefaultAsync(Expression<Func<T, bool>>? predicate = null);
+
+    /// <summary>
     /// Асинхронно возвращает единственную сущность, удовлетворяющую указанному условию, или null, если сущность не найдена.
     /// </summary>
     /// <param name="predicate">Условие для фильтрации сущностей</param>

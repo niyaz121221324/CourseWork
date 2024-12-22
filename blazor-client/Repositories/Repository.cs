@@ -82,14 +82,30 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task<T> CreateAsync(T entity)
     {
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (entity == null) 
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
 
         try
         {
             LogRequestInfo("POST", _baseUrl);
             var response = await _httpClient.PostAsJsonAsync(_baseUrl, entity);
-            return await HandleResponseAsync<T>(response)
-                ?? throw new InvalidOperationException("Failed to deserialize the created entity.");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var lastInsertedValue = await HandleResponseAsync<T>(response);
+                if (lastInsertedValue == null)
+                {
+                    throw new InvalidOperationException("Failed to deserialize the created entity.");
+                }
+
+                return lastInsertedValue;
+            }
+            else
+            {
+                throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
+            }
         }
         catch (Exception ex)
         {

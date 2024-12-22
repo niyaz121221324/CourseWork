@@ -60,17 +60,9 @@ public abstract class BaseCrudController<T> : BaseApiController where T : class
 
             await _repository.CreateAsync(entity);
 
-            var newIdValue = idProperty.GetValue(entity);
-            if (newIdValue == null)
-            {
-                return StatusCode(500, "Failed to retrieve the ID of the newly created entity.");
-            }
+            var lastInsertedValue = await _repository.LastOrDefaultAsync();
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = newIdValue },
-                entity
-            );
+            return Ok(lastInsertedValue);
         }
         catch (Exception ex)
         {
