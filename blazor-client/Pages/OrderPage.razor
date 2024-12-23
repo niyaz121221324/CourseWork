@@ -1,0 +1,284 @@
+@page "/orders"
+@inject IRepository<Order> OrderRepository
+@inject IRepository<Client> ClientRepository
+@inject IRepository<Cargo> CargoRepository
+@inject IRepository<Route> RouteRepository
+@inject IRepository<Vehicle> VehicleRepository
+@inject IRepository<User> DriverRepository
+
+<div class="orders-page">
+    <header class="text-center">
+        <h1 class="display-4">📦 Order Management</h1>
+        <p class="lead">Manage and track your orders efficiently.</p>
+        <hr class="my-4">
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-center mb-4">Order List</h3>
+
+                @if (Orders != null && Orders.Any())
+                {
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Client</th>
+                                <th>Cargo</th>
+                                <th>Route</th>
+                                <th>Vehicle</th>
+                                <th>Driver</th>
+                                <th>Order Date</th>
+                                <th>Delivery Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Orders)
+                            {
+                                <tr>
+                                    <td>@order.Orderid</td>
+                                    <td>@(order.Client?.CompanyName ?? "N/A")</td>
+                                    <td>@order.Cargo.Name</td>
+                                    <td>@order.Route.Description</td>
+                                    <td>@(order.Vehicle?.VehicleType ?? "N/A")</td>
+                                    <td>@(order.Driver?.Firstname ?? "N/A")</td>
+                                    <td>@order.Orderdate</td>
+                                    <td>@(order.Deliverydate.HasValue ? order.Deliverydate.Value.ToShortDateString() : "N/A")</td>
+                                    <td>@order.Status</td>
+                                    <td>
+                                        @if (EditingOrder?.Orderid == order.Orderid)
+                                        {
+                                            <button class="btn btn-success btn-sm" @onclick="SaveOrder">Save</button>
+                                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary btn-sm" @onclick="() => StartEditing(order)">Edit</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteOrder(order.Orderid)">Delete</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-center">No orders available.</p>
+                }
+
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary" @onclick="AddNewOrder">Add New Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (EditingOrder != null)
+    {
+        <div class="container mt-5">
+            <h3>Edit Order</h3>
+            <EditForm Model="EditingOrder" OnValidSubmit="SaveOrder">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label for="client">Client</label>
+                    <select id="client" class="form-control" @bind="EditingOrder.Clientid">
+                        @foreach (var client in Clients)
+                        {
+                            <option value="@client.ClientId">@client.CompanyName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargo">Cargo</label>
+                    <select id="cargo" class="form-control" @bind="EditingOrder.Cargoid">
+                        @foreach (var cargo in Cargos)
+                        {
+                            <option value="@cargo.CargoId">@cargo.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="route">Route</label>
+                    <select id="route" class="form-control" @bind="EditingOrder.Routeid">
+                        @foreach (var route in Routes)
+                        {
+                            <option value="@route.RouteId">@route.Description</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="vehicle">Vehicle</label>
+                    <select id="vehicle" class="form-control" @bind="EditingOrder.Vehicleid">
+                        @foreach (var vehicle in Vehicles)
+                        {
+                            <option value="@vehicle.VehicleId">@vehicle.VehicleType</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="driver">Driver</label>
+                    <select id="driver" class="form-control" @bind="EditingOrder.Driverid">
+                        @foreach (var driver in Drivers)
+                        {
+                            <option value="@driver.Userid">@driver.Firstname</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="orderDate">Order Date</label>
+                    <input type="date" class="form-control" id="orderDate" @bind="EditingOrder.Orderdate" />
+                </div>
+
+                <div class="form-group">
+                    <label for="deliveryDate">Delivery Date</label>
+                    <input type="date" class="form-control" id="deliveryDate" @bind="EditingOrder.Deliverydate" />
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <input type="text" class="form-control" id="status" @bind="EditingOrder.Status" />
+                </div>
+
+                <button class="btn btn-success" type="submit">Save</button>
+                <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Order>? Orders { get; set; }
+    private List<Client>? Clients { get; set; }
+    private List<Cargo>? Cargos { get; set; }
+    private List<Route>? Routes { get; set; }
+    private List<Vehicle>? Vehicles { get; set; }
+    private List<User>? Drivers { get; set; }
+    private Order? EditingOrder { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrdersAsync();
+        await LoadReferencesAsync();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        try
+        {
+            Orders = await OrderRepository.GetAllAsync() ?? new List<Order>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading orders: {ex.Message}");
+        }
+    }
+
+    private async Task LoadReferencesAsync()
+    {
+        try
+        {
+            Clients = await ClientRepository.GetAllAsync() ?? new List<Client>();
+            Cargos = await CargoRepository.GetAllAsync() ?? new List<Cargo>();
+            Routes = await RouteRepository.GetAllAsync() ?? new List<Route>();
+            Vehicles = await VehicleRepository.GetAllAsync() ?? new List<Vehicle>();
+            Drivers = await DriverRepository.GetAllAsync() ?? new List<User>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading references: {ex.Message}");
+        }
+    }
+
+    private void StartEditing(Order order)
+    {
+        EditingOrder = new Order
+        {
+            Orderid = order.Orderid,
+            Clientid = order.Clientid,
+            Cargoid = order.Cargoid,
+            Routeid = order.Routeid,
+            Vehicleid = order.Vehicleid,
+            Driverid = order.Driverid,
+            Orderdate = order.Orderdate,
+            Deliverydate = order.Deliverydate,
+            Status = order.Status
+        };
+    }
+
+    private async Task SaveOrder()
+    {
+        if (EditingOrder == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (EditingOrder.Orderid == 0)
+            {
+                await OrderRepository.CreateAsync(EditingOrder);
+            }
+            else
+            {
+                await OrderRepository.UpdateAsync(EditingOrder.Orderid, EditingOrder);
+            }
+            await LoadOrdersAsync();
+            EditingOrder = null;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error saving order: {ex.Message}");
+        }
+    }
+
+    private void CancelEdit()
+    {
+        EditingOrder = null;
+    }
+
+    private async Task DeleteOrder(int orderId)
+    {
+        try
+        {
+            await OrderRepository.DeleteAsync(orderId);
+            await LoadOrdersAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting order: {ex.Message}");
+        }
+    }
+
+    private async Task AddNewOrder()
+    {
+        var newOrder = new Order
+        {
+            Clientid = Clients?.FirstOrDefault()?.ClientId ?? 1, 
+            Cargoid = Cargos?.FirstOrDefault()?.CargoId ?? 1,
+            Routeid = Routes?.FirstOrDefault()?.RouteId ?? 1,
+            Vehicleid = Vehicles?.FirstOrDefault()?.VehicleId ?? 1,
+            Driverid = Drivers?.FirstOrDefault()?.Userid ?? 1,
+            Orderdate = DateOnly.FromDateTime(DateTime.Now),
+            Status = "New",
+            Client = Clients?.FirstOrDefault(),
+            Cargo = Cargos?.FirstOrDefault(),
+            Route = Routes?.FirstOrDefault(),
+            Vehicle = Vehicles?.FirstOrDefault(),
+            Driver = Drivers?.FirstOrDefault(),
+        };
+
+        await OrderRepository.CreateAsync(newOrder);
+        await LoadOrdersAsync();
+    }
+}

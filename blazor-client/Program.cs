@@ -12,6 +12,8 @@ builder.Services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();
 builder.Services.AddScoped<IRepository<Cargo>, Repository<Cargo>>();
 builder.Services.AddScoped<IRepository<Route>, Repository<Route>>();
 builder.Services.AddScoped<IRepository<Client>, Repository<Client>>();
+builder.Services.AddScoped<IRepository<Order>, Repository<Order>>();
+builder.Services.AddScoped<IRepository<Driver>, Repository<Driver>>();
 
 // Add root components
 builder.RootComponents.Add<App>("#app");
