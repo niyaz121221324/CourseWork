@@ -6,11 +6,11 @@ public class Vehicle
 
     public string VehicleNumber { get; set; } = string.Empty;
 
-    public string VehicleType { get; set; } = string.Empty;
+    public string VehicleType { get; set; } = "Truck";
 
     public decimal LoadCapacity { get; set; }
 
     public decimal? Volume { get; set; }
 
-    public string? Status { get; set; }
+    public string Status { get; set; } = "On Trip";
 }

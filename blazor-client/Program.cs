@@ -8,6 +8,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:8080/api") });
 builder.Services.AddScoped<IRepository<User>, Repository<User>>();
+builder.Services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();
 
 // Add root components
 builder.RootComponents.Add<App>("#app");

@@ -194,14 +194,12 @@
 
     private async Task AddNewUser()
     {
-        int newLogin = (Users?.Max(u => u.Userid) ?? 0) + 1;
-
         var newUser = new User
         {
             Firstname = "New",
             Lastname = "User",
             Role = "Admin",  
-            Login = $"New{newLogin.ToString()}",  
+            Login = $"New{(Users?.Max(u => u.Userid) ?? 0) + 1}",  
             Email = "new.user@example.com",
             Phone = null
         };

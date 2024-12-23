@@ -116,18 +116,29 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task UpdateAsync(int id, T entity)
     {
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        string url = $"{_baseUrl}/{id}";
+        LogRequestInfo("PUT", url);
 
         try
         {
-            string url = $"{_baseUrl}/{id}";
-            LogRequestInfo("PUT", url);
             var response = await _httpClient.PutAsJsonAsync(url, entity);
-            await HandleResponseAsync<T>(response);  
+
+            if (response.IsSuccessStatusCode)
+            {
+                LogRequestInfo("PUT", url);
+                return;
+            }
+
+            var errorDetails = await response.Content.ReadAsStringAsync();
         }
         catch (Exception ex)
         {
-            LogError("PUT", $"{_baseUrl}/{id}", ex);
+            LogError("PUT", url, ex);
             throw;
         }
     }
