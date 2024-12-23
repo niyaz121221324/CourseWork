@@ -1,0 +1,175 @@
+@page "/clients"
+@inject IRepository<Client> ClientRepository
+
+<div class="clients-page">
+    <header class="text-center">
+        <h1 class="display-4">🏢 Client Management</h1>
+        <p class="lead">Manage client information effectively.</p>
+        <hr class="my-4">
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-center mb-4">Client List</h3>
+
+                @if (Clients != null && Clients.Any())
+                {
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Client ID</th>
+                                <th>Company Name</th>
+                                <th>INN</th>
+                                <th>Contact Person</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var client in Clients)
+                            {
+                                <tr>
+                                    <td>@client.ClientId</td>
+                                    <td>
+                                        @if (client.ClientId == EditingClient?.ClientId)
+                                        {
+                                            <input class="form-control" @bind="EditingClient.CompanyName" />
+                                        }
+                                        else
+                                        {
+                                            @client.CompanyName
+                                        }
+                                    </td>
+                                    <td>@client.Inn</td>
+                                    <td>@client.ContactPerson</td>
+                                    <td>@client.Phone</td>
+                                    <td>@client.Email</td>
+                                    <td>@client.Address</td>
+                                    <td>
+                                        @if (client.ClientId == EditingClient?.ClientId)
+                                        {
+                                            <button class="btn btn-success btn-sm" @onclick="SaveClient">Save</button>
+                                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary btn-sm" @onclick="() => StartEditing(client)">Edit</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteClient(client.ClientId)">Delete</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-center">No clients available.</p>
+                }
+
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary" @onclick="AddNewClient">Add New Client</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Client>? Clients { get; set; }
+    private Client? EditingClient { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClientsAsync();
+    }
+
+    private async Task LoadClientsAsync()
+    {
+        try
+        {
+            Clients = await ClientRepository.GetAllAsync() ?? new List<Client>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading clients: {ex.Message}");
+        }
+    }
+
+    private void StartEditing(Client client)
+    {
+        EditingClient = new Client
+        {
+            ClientId = client.ClientId,
+            CompanyName = client.CompanyName,
+            Inn = client.Inn,
+            ContactPerson = client.ContactPerson,
+            Phone = client.Phone,
+            Email = client.Email,
+            Address = client.Address
+        };
+    }
+
+    private async Task SaveClient()
+    {
+        if (EditingClient == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await ClientRepository.UpdateAsync(EditingClient.ClientId, EditingClient);
+            await LoadClientsAsync();
+            EditingClient = null;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error saving client: {ex.Message}");
+        }
+    }
+
+    private void CancelEdit()
+    {
+        EditingClient = null;
+    }
+
+    private async Task DeleteClient(int clientId)
+    {
+        try
+        {
+            await ClientRepository.DeleteAsync(clientId);
+            await LoadClientsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting client: {ex.Message}");
+        }
+    }
+
+    private async Task AddNewClient()
+    {
+        var newClient = new Client
+        {
+            CompanyName = "New Company",
+            Inn = "0000000000",
+            ContactPerson = "New Contact",
+            Phone = null,
+            Email = "new.company@example.com",
+            Address = "New Address"
+        };
+
+        try
+        {
+            await ClientRepository.CreateAsync(newClient);
+            await LoadClientsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error adding client: {ex.Message}");
+        }
+    }
+}
