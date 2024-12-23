@@ -1,0 +1,207 @@
+@page "/cargos"
+@inject IRepository<Cargo> CargoRepository
+
+<div class="cargo-page">
+    <header class="text-center">
+        <h1 class="display-4">📦 Cargo Management</h1>
+        <p class="lead">Manage cargos efficiently.</p>
+        <hr class="my-4">
+    </header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-center mb-4">Cargo List</h3>
+
+                @if (Cargos != null && Cargos.Any())
+                {
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Cargo ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Weight</th>
+                                <th>Volume</th>
+                                <th>Special Requirements</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cargo in Cargos)
+                            {
+                                <tr>
+                                    <td>@cargo.CargoId</td>
+                                    <td>
+                                        @if (cargo.CargoId == EditingCargo?.CargoId)
+                                        {
+                                            <input class="form-control" @bind="EditingCargo.Name" />
+                                        }
+                                        else
+                                        {
+                                            @cargo.Name
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (cargo.CargoId == EditingCargo?.CargoId)
+                                        {
+                                            <input class="form-control" @bind="EditingCargo.Type" />
+                                        }
+                                        else
+                                        {
+                                            @cargo.Type
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (cargo.CargoId == EditingCargo?.CargoId)
+                                        {
+                                            <input class="form-control" type="number" @bind="EditingCargo.Weight" />
+                                        }
+                                        else
+                                        {
+                                            @cargo.Weight
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (cargo.CargoId == EditingCargo?.CargoId)
+                                        {
+                                            <input class="form-control" type="number" @bind="EditingCargo.Volume" />
+                                        }
+                                        else
+                                        {
+                                            @cargo.Volume
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (cargo.CargoId == EditingCargo?.CargoId)
+                                        {
+                                            <input class="form-control" @bind="EditingCargo.SpecialRequirements" />
+                                        }
+                                        else
+                                        {
+                                            @cargo.SpecialRequirements
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (cargo.CargoId == EditingCargo?.CargoId)
+                                        {
+                                            <button class="btn btn-success btn-sm" @onclick="SaveCargo">Save</button>
+                                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary btn-sm" @onclick="() => StartEditing(cargo)">Edit</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteCargo(cargo.CargoId)">Delete</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-center">No cargos available.</p>
+                }
+
+                <div class="text-center mt-4">
+                    <button class="btn btn-primary" @onclick="AddNewCargo">Add New Cargo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Cargo>? Cargos { get; set; }
+    private Cargo? EditingCargo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCargosAsync();
+    }
+
+    private async Task LoadCargosAsync()
+    {
+        try
+        {
+            Cargos = await CargoRepository.GetAllAsync() ?? new List<Cargo>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading cargos: {ex.Message}");
+        }
+    }
+
+    private void StartEditing(Cargo cargo)
+    {
+        EditingCargo = new Cargo
+        {
+            CargoId = cargo.CargoId,
+            Name = cargo.Name,
+            Type = cargo.Type,
+            Weight = cargo.Weight,
+            Volume = cargo.Volume,
+            SpecialRequirements = cargo.SpecialRequirements
+        };
+    }
+
+    private async Task SaveCargo()
+    {
+        if (EditingCargo == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await CargoRepository.UpdateAsync(EditingCargo.CargoId, EditingCargo);
+            await LoadCargosAsync();
+            EditingCargo = null;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error saving cargo: {ex.Message}");
+        }
+    }
+
+    private void CancelEdit()
+    {
+        EditingCargo = null;
+    }
+
+    private async Task DeleteCargo(int cargoId)
+    {
+        try
+        {
+            await CargoRepository.DeleteAsync(cargoId);
+            await LoadCargosAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting cargo: {ex.Message}");
+        }
+    }
+
+    private async Task AddNewCargo()
+    {
+        var newCargo = new Cargo
+        {
+            Name = "New Cargo",
+            Type = "Standard",
+            Weight = 0,
+            Volume = null,
+            SpecialRequirements = null
+        };
+
+        try
+        {
+            await CargoRepository.CreateAsync(newCargo);
+            await LoadCargosAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error adding cargo: {ex.Message}");
+        }
+    }
+}
